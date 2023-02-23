@@ -1167,3 +1167,830 @@ redis> SET mykey 10.50
 redis> INCRBYFLOAT mykey 0.1
 "10.6"
 ```
+
+# HSET
+
+Syntax
+
+```
+HSET key field value [field value ...]
+```
+
+Sets the specified fields to their respective values in the hash stored at `key`.
+
+This command overwrites the values of specified fields that exist in the hash. If `key` doesn't exist, a new key holding a hash is created.
+
+Returns The number of fields that were added.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "Hello"
+(integer) 1
+```
+
+# HGET
+
+Syntax
+
+```
+HGET key field
+```
+
+Returns the value associated with `field` in the hash stored at `key`.
+
+Returns  the value associated with `field`, or `nil` when `field` is not present in the hash or `key` does not exist.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "foo"
+(integer) 1
+redis> HGET myhash field1
+"foo"
+redis> HGET myhash field2
+(nil)
+```
+
+# HGETALL
+
+Syntax
+
+```
+HGETALL key
+```
+
+Returns all fields and values of the hash stored at `key`. In the returned value, every field name is followed by its value, so the length of the reply is twice the size of the hash.
+
+Returns list of fields and their values stored in the hash, or an empty list when `key` does not exist.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "Hello"
+(integer) 1
+redis> HSET myhash field2 "World"
+(integer) 1
+redis> HGETALL myhash
+1) "field1"
+2) "Hello"
+3) "field2"
+4) "World"
+```
+
+# HDEL
+
+Syntax
+
+```
+HDEL key field [field ...]
+```
+
+Removes the specified fields from the hash stored at `key`. Specified fields that do not exist within this hash are ignored. If `key` does not exist, it is treated as an empty hash and this command returns `0`.
+
+Returns the number of fields that were removed from the hash, not including specified but non existing fields.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "foo"
+(integer) 1
+redis> HDEL myhash field1
+(integer) 1
+redis> HDEL myhash field2
+(integer) 0
+```
+
+# HEXISTS
+
+Syntax
+
+```
+HEXISTS key field
+```
+
+Returns if `field` is an existing field in the hash stored at `key`.
+
+Returns specifically:
+
+- `1` if the hash contains `field`.
+- `0` if the hash does not contain `field`, or `key` does not exist.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "foo"
+(integer) 1
+redis> HEXISTS myhash field1
+(integer) 1
+redis> HEXISTS myhash field2
+(integer) 0
+```
+
+# HMGET
+
+Syntax
+
+```
+HMGET key field [field ...]
+```
+
+Returns the values associated with the specified `fields` in the hash stored at `key`.
+
+For every `field` that does not exist in the hash, a `nil` value is returned. Because non-existing keys are treated as empty hashes, running `HMGET` against a non-existing `key` will return a list of `nil` values.
+
+returns list of values associated with the given fields, in the same order as they are requested.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "Hello" field2 "World"
+(integer) 1
+redis> HMGET myhash field1 field2 nofield
+1) "Hello"
+2) "World"
+3) (nil)
+```
+
+# HSCAN
+
+Syntax
+
+```
+HSCAN key cursor [MATCH pattern] [COUNT count]
+```
+
+iterates fields of Hash types and their associated values.
+
+# HINCRBY
+
+Syntax
+
+```
+HINCRBY key field increment
+```
+
+Increments the number stored at `field` in the hash stored at `key` by `increment`. If `key` does not exist, a new key holding a hash is created. If `field` does not exist the value is set to `0` before the operation is performed.
+
+The range of values supported by `HINCRBY` is limited to 64 bit signed integers.
+
+Returns the value at `field` after the increment operation.
+
+#### Examples
+
+Since the `increment` argument is signed, both increment and decrement operations can be performed:
+
+```
+redis> HSET myhash field 5
+(integer) 1
+redis> HINCRBY myhash field 1
+(integer) 6
+redis> HINCRBY myhash field -1
+(integer) 5
+```
+
+# HINCRBYFLOAT
+
+Syntax
+
+```
+HINCRBYFLOAT key field increment
+```
+
+Increment the specified `field` of a hash stored at `key`, and representing a floating point number, by the specified `increment`. If the increment value is negative, the result is to have the hash field value **decremented** instead of incremented. If the field does not exist, it is set to `0` before performing the operation. An error is returned if one of the following conditions occur:
+
+- The field contains a value of the wrong type (not a string).
+- The current field content or the specified increment are not parsable as a double precision floating point number.
+
+Returns the value of `field` after the increment.
+
+#### Examples
+
+```
+redis> HSET mykey field 10.50
+(integer) 1
+redis> HINCRBYFLOAT mykey field 0.1
+"10.6"
+redis> HINCRBYFLOAT mykey field -5
+"5.6"
+redis> HSET mykey field 5.0e3
+(integer) 0
+redis> HINCRBYFLOAT mykey field 2.0e2
+"5200"
+```
+
+# HKEYS
+
+Syntax
+
+```
+HKEYS key
+```
+
+Returns all field names in the hash stored at `key`.
+
+Returns list of fields in the hash, or an empty list when `key` does not exist.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "Hello" field2 "World"
+(integer) 1
+redis> HKEYS myhash
+1) "field1"
+2) "field2"
+```
+
+# HLEN
+
+Syntax
+
+```
+HLEN key
+```
+
+Returns the number of fields contained in the hash stored at `key`.
+
+Returns number of fields in the hash, or `0` when `key` does not exist.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "Hello"
+(integer) 1
+redis> HSET myhash field2 "World"
+(integer) 1
+redis> HLEN myhash
+(integer) 2
+```
+
+# HSETNX
+
+Syntax
+
+```
+HSETNX key field value
+```
+
+Sets `field` in the hash stored at `key` to `value`, only if `field` does not yet exist. If `key` does not exist, a new key holding a hash is created. If `field` already exists, this operation has no effect.
+
+Returns specifically:
+
+- `1` if `field` is a new field in the hash and `value` was set.
+- `0` if `field` already exists in the hash and no operation was performed.
+
+#### Examples
+
+```
+redis> HSETNX myhash field "Hello"
+(integer) 1
+redis> HSETNX myhash field "World"
+(integer) 0
+redis> HGET myhash field
+"Hello"
+```
+
+# HVALS
+
+Syntax
+
+```
+HVALS key
+```
+
+Returns all values in the hash stored at `key`.
+
+Returns  list of values in the hash, or an empty list when `key` does not exist.
+
+#### Examples
+
+```
+redis> HSET myhash field1 "Hello"
+(integer) 1
+redis> HSET myhash field2 "World"
+(integer) 1
+redis> HVALS myhash
+1) "Hello"
+2) "World"
+```
+
+# LPUSH
+
+Syntax
+
+```
+LPUSH key element [element ...]
+```
+
+Insert all the specified values at the head of the list stored at `key`. If `key` does not exist, it is created as empty list before performing the push operations. When `key` holds a value that is not a list, an error is returned.
+
+It is possible to push multiple elements using a single command call just specifying multiple arguments at the end of the command. Elements are inserted one after the other to the head of the list, from the leftmost element to the rightmost element. So for instance the command `LPUSH mylist a b c` will result into a list containing `c` as first element, `b` as second element and `a` as third element.
+
+Returns the length of the list after the push operations.
+
+#### Examples
+
+```
+redis> LPUSH mylist "world"
+(integer) 1
+redis> LPUSH mylist "hello"
+(integer) 2
+redis> LRANGE mylist 0 -1 #all elements in myhash
+1) "hello"
+2) "world"
+```
+
+# LRANGE
+
+Syntax
+
+```
+LRANGE key start stop
+```
+
+Returns the specified elements of the list stored at `key`. The offsets `start` and `stop` are zero-based indexes, with `0` being the first element of the list (the head of the list), `1` being the next element and so on.
+
+These offsets can also be negative numbers indicating offsets starting at the end of the list. For example, `-1` is the last element of the list, `-2` the penultimate, and so on.
+
+Returns list of elements in the specified range.
+
+#### Examples
+
+```
+redis> RPUSH mylist "one"
+(integer) 1
+redis> RPUSH mylist "two"
+(integer) 2
+redis> RPUSH mylist "three"
+(integer) 3
+redis> LRANGE mylist 0 0
+1) "one"
+```
+
+# RPUSH
+
+Syntax
+
+```
+RPUSH key element [element ...]
+```
+
+Insert all the specified values at the tail of the list stored at `key`. If `key` does not exist, it is created as empty list before performing the push operation. When `key` holds a value that is not a list, an error is returned.
+
+It is possible to push multiple elements using a single command call just specifying multiple arguments at the end of the command. Elements are inserted one after the other to the tail of the list, from the leftmost element to the rightmost element. So for instance the command `RPUSH mylist a b c` will result into a list containing `a` as first element, `b` as second element and `c` as third element.
+
+Returns the length of the list after the push operation.
+
+#### Examples
+
+```
+redis> RPUSH mylist "hello"
+(integer) 1
+redis> RPUSH mylist "world"
+(integer) 2
+redis> LRANGE mylist 0 -1
+1) "hello"
+2) "world"
+```
+
+# LPUSHX
+
+Syntax
+
+```
+LPUSHX key element [element ...]
+```
+
+Inserts specified values at the head of the list stored at `key`, only if `key` already exists and holds a list. In contrary to [`LPUSH`](https://redis.io/commands/lpush), no operation will be performed when `key` does not yet exist.
+
+Returns the length of the list after the push operation.
+
+#### Examples
+
+```
+redis> LPUSH mylist "World"
+(integer) 1
+redis> LPUSHX mylist "Hello"
+(integer) 2
+redis> LPUSHX myotherlist "Hello"
+(integer) 0
+redis> LRANGE mylist 0 -1
+1) "Hello"
+2) "World"
+redis> LRANGE myotherlist 0 -1
+(empty array)
+```
+
+# RPUSHX
+
+Syntax
+
+```
+RPUSHX key element [element ...]
+```
+
+Inserts specified values at the tail of the list stored at `key`, only if `key` already exists and holds a list. In contrary to [`RPUSH`](https://redis.io/commands/rpush), no operation will be performed when `key` does not yet exist.
+
+Returns the length of the list after the push operation.
+
+#### Examples
+
+```
+redis> RPUSH mylist "Hello"
+(integer) 1
+redis> RPUSHX mylist "World"
+(integer) 2
+redis> RPUSHX myotherlist "World"
+(integer) 0
+redis> LRANGE mylist 0 -1
+1) "Hello"
+2) "World"
+redis> LRANGE myotherlist 0 -1
+(empty array)
+```
+
+# LPOP
+
+Syntax
+
+```
+LPOP key [count]
+```
+
+Removes and returns the first elements of the list stored at `key`.
+
+By default, the command pops a single element from the beginning of the list. When provided with the optional `count` argument, the reply will consist of up to `count` elements, depending on the list's length.
+
+Returns :
+
+-  When called without the `count` argument: the value of the first element, or `nil` when `key` does not exist. 
+
+- When called with the `count` argument: list of popped elements, or `nil` when `key` does not exist.
+
+#### Examples
+
+```
+redis> RPUSH mylist "one" "two" "three" "four" "five"
+(integer) 5
+redis> LPOP mylist
+"one"
+redis> LPOP mylist 2
+1) "two"
+2) "three"
+redis> LRANGE mylist 0 -1
+1) "four"
+2) "five"
+```
+
+# RPOP
+
+Syntax
+
+```
+RPOP key [count]
+```
+
+Removes and returns the last elements of the list stored at `key`.
+
+By default, the command pops a single element from the end of the list. When provided with the optional `count` argument, the reply will consist of up to `count` elements, depending on the list's length.
+
+Returns :
+
+-  When called without the `count` argument: the value of the last element, or `nil` when `key` does not exist. 
+
+- When called with the `count` argument: list of popped elements, or `nil` when `key` does not exist.
+
+#### Examples
+
+```
+redis> RPUSH mylist "one" "two" "three" "four" "five"
+(integer) 5
+redis> RPOP mylist
+"five"
+redis> RPOP mylist 2
+1) "four"
+2) "three"
+redis> LRANGE mylist 0 -1
+1) "one"
+2) "two"
+```
+
+# BLPOP
+
+Syntax
+
+```
+BLPOP key [key ...] timeout
+```
+
+`BLPOP` is a blocking list pop primitive. It is the blocking version of [`LPOP`](https://redis.io/commands/lpop) because it blocks the connection when there are no elements to pop from any of the given lists. An element is popped from the head of the first list that is non-empty, with the given keys being checked in the order that they are given.
+
+## Non-blocking behavior
+
+When `BLPOP` is called, if at least one of the specified keys contains a non-empty list, an element is popped from the head of the list and returned to the caller together with the `key` it was popped from.
+
+Keys are checked in the order that they are given. Let's say that the key `list1` doesn't exist and `list2` and `list3` hold non-empty lists. Consider the following command:
+
+```
+BLPOP list1 list2 list3 0
+```
+
+`BLPOP` guarantees to return an element from the list stored at `list2` (since it is the first non empty list when checking `list1`, `list2` and `list3` in that order).
+
+Returns specifically:
+
+- A `nil` multi-bulk when no element could be popped and the timeout expired.
+- A two-element multi-bulk with the first element being the name of the key where an element was popped and the second element being the value of the popped element.
+
+#### Examples
+
+```
+redis> DEL list1 list2
+(integer) 0
+redis> RPUSH list1 a b c
+(integer) 3
+redis> BLPOP list1 list2 0
+1) "list1"
+2) "a"
+```
+
+# BRPOP
+
+Syntax
+
+```
+BRPOP key [key ...] timeout
+```
+
+`BRPOP` is a blocking list pop primitive. It is the blocking version of [`RPOP`](https://redis.io/commands/rpop) because it blocks the connection when there are no elements to pop from any of the given lists. An element is popped from the tail of the first list that is non-empty, with the given keys being checked in the order that they are given.
+
+Returns specifically:
+
+- A `nil` multi-bulk when no element could be popped and the timeout expired.
+- A two-element multi-bulk with the first element being the name of the key where an element was popped and the second element being the value of the popped element.
+
+#### Examples
+
+```
+redis> DEL list1 list2
+(integer) 0
+redis> RPUSH list1 a b c
+(integer) 3
+redis> BRPOP list1 list2 0
+1) "list1"
+2) "c"
+```
+
+# LMOVE
+
+Syntax
+
+```
+LMOVE source destination <LEFT | RIGHT> <LEFT | RIGHT>
+```
+
+Atomically returns and removes the first/last element (head/tail depending on the `wherefrom` argument) of the list stored at `source`, and pushes the element at the first/last element (head/tail depending on the `whereto` argument) of the list stored at `destination`.
+
+For example: consider `source` holding the list `a,b,c`, and `destination` holding the list `x,y,z`. Executing `LMOVE source destination RIGHT LEFT` results in `source` holding `a,b` and `destination` holding `c,x,y,z`.
+
+If `source` does not exist, the value `nil` is returned and no operation is performed. If `source` and `destination` are the same, the operation is equivalent to removing the first/last element from the list and pushing it as first/last element of the list, so it can be considered as a list rotation command (or a no-op if `wherefrom` is the same as `whereto`).
+
+This command comes in place of the now deprecated [`RPOPLPUSH`](https://redis.io/commands/rpoplpush). Doing `LMOVE RIGHT LEFT` is equivalent.
+
+Returns the element being popped and pushed.
+
+#### Examples
+
+```
+redis> RPUSH mylist "one"
+(integer) 1
+redis> RPUSH mylist "two"
+(integer) 2
+redis> RPUSH mylist "three"
+(integer) 3
+redis> LMOVE mylist myotherlist RIGHT LEFT
+"three"
+redis> LMOVE mylist myotherlist LEFT RIGHT
+"one"
+redis> LRANGE mylist 0 -1
+1) "two"
+redis> LRANGE myotherlist 0 -1
+1) "three"
+2) "one"
+```
+
+# BLMOVE
+
+Syntax
+
+```
+BLMOVE source destination <LEFT | RIGHT> <LEFT | RIGHT> timeout
+```
+
+`BLMOVE` is the blocking variant of [`LMOVE`](https://redis.io/commands/lmove). When `source` contains elements, this command behaves exactly like [`LMOVE`](https://redis.io/commands/lmove). When used inside a [`MULTI`](https://redis.io/commands/multi)/[`EXEC`](https://redis.io/commands/exec) block, this command behaves exactly like [`LMOVE`](https://redis.io/commands/lmove). When `source` is empty, Redis will block the connection until another client pushes to it or until `timeout` (a double value specifying the maximum number of seconds to block) is reached. A `timeout` of zero can be used to block indefinitely.
+
+This command comes in place of the now deprecated [`BRPOPLPUSH`](https://redis.io/commands/brpoplpush). Doing `BLMOVE RIGHT LEFT` is equivalent.
+
+Returns the element being popped from `source` and pushed to `destination`. If `timeout` is reached, a [Null reply](https://redis.io/docs/reference/protocol-spec#resp-bulk-strings) is returned.
+
+# LLEN
+
+Syntax
+
+```
+LLEN key
+```
+
+Returns the length of the list stored at `key`. If `key` does not exist, it is interpreted as an empty list and `0` is returned. An error is returned when the value stored at `key` is not a list.
+
+Returns the length of the list at `key`.
+
+#### Examples
+
+```
+redis> LPUSH mylist "World"
+(integer) 1
+redis> LPUSH mylist "Hello"
+(integer) 2
+redis> LLEN mylist
+(integer) 2
+```
+
+# LINDEX
+
+Syntax
+
+```
+LINDEX key index
+```
+
+Returns the element at index `index` in the list stored at `key`. The index is zero-based, so `0` means the first element, `1` the second element and so on. Negative indices can be used to designate elements starting at the tail of the list. Here, `-1` means the last element, `-2` means the penultimate and so forth.
+
+When the value at `key` is not a list, an error is returned.
+
+Returns the requested element, or `nil` when `index` is out of range.
+
+#### Examples
+
+```
+redis> LPUSH mylist "World"
+(integer) 1
+redis> LPUSH mylist "Hello"
+(integer) 2
+redis> LINDEX mylist 0
+"Hello"
+redis> LINDEX mylist -1
+"World"
+redis> LINDEX mylist 3
+(nil)
+```
+
+# LINSERT
+
+Syntax
+
+```
+LINSERT key <BEFORE | AFTER> pivot element
+```
+
+Inserts `element` in the list stored at `key` either before or after the reference value `pivot`.
+
+When `key` does not exist, it is considered an empty list and no operation is performed.
+
+An error is returned when `key` exists but does not hold a list value.
+
+Returns the list length after a successful insert operation, `0` if the `key` doesn't exist, and `-1` when the `pivot` wasn't found.
+
+#### Examples
+
+```
+redis> RPUSH mylist "Hello"
+(integer) 1
+redis> RPUSH mylist "World"
+(integer) 2
+redis> LINSERT mylist BEFORE "World" "There"
+(integer) 3
+redis> LRANGE mylist 0 -1
+1) "Hello"
+2) "There"
+3) "World"
+```
+
+# LREM
+
+Syntax
+
+```
+LREM key count element
+```
+
+Removes the first `count` occurrences of elements equal to `element` from the list stored at `key`. The `count` argument influences the operation in the following ways:
+
+- `count > 0`: Remove elements equal to `element` moving from head to tail.
+- `count < 0`: Remove elements equal to `element` moving from tail to head.
+- `count = 0`: Remove all elements equal to `element`.
+
+For example, `LREM list -2 "hello"` will remove the last two occurrences of `"hello"` in the list stored at `list`.
+
+Note that non-existing keys are treated like empty lists, so when `key` does not exist, the command will always return `0`.
+
+Returns the number of removed elements.
+
+#### Examples
+
+```
+redis> RPUSH mylist "hello"
+(integer) 1
+redis> RPUSH mylist "hello"
+(integer) 2
+redis> RPUSH mylist "foo"
+(integer) 3
+redis> RPUSH mylist "hello"
+(integer) 4
+redis> LREM mylist -2 "hello"
+(integer) 2
+redis> LRANGE mylist 0 -1
+1) "hello"
+2) "foo"
+```
+
+# LSET
+
+Syntax
+
+```
+LSET key index element
+```
+
+Sets the list element at `index` to `element`.
+
+An error is returned for out of range indexes.
+
+#### Examples
+
+```
+redis> RPUSH mylist "one"
+(integer) 1
+redis> RPUSH mylist "two"
+(integer) 2
+redis> RPUSH mylist "three"
+(integer) 3
+redis> LSET mylist 0 "four"
+"OK"
+redis> LSET mylist -2 "five"
+"OK"
+redis> LRANGE mylist 0 -1
+1) "four"
+2) "five"
+3) "three"
+```
+
+# LTRIM
+
+Syntax
+
+```
+LTRIM key start stop
+```
+
+Trim an existing list so that it will contain only the specified range of elements specified. Both `start` and `stop` are zero-based indexes, where `0` is the first element of the list (the head), `1` the next element and so on.
+
+For example: `LTRIM foobar 0 2` will modify the list stored at `foobar` so that only the first three elements of the list will remain.
+
+`start` and `end` can also be negative numbers indicating offsets from the end of the list, where `-1` is the last element of the list, `-2` the penultimate element and so on.
+
+Out of range indexes will not produce an error: if `start` is larger than the end of the list, or `start > end`, the result will be an empty list (which causes `key` to be removed). If `end` is larger than the end of the list, Redis will treat it like the last element of the list.
+
+A common use of `LTRIM` is together with [`LPUSH`](https://redis.io/commands/lpush) / [`RPUSH`](https://redis.io/commands/rpush). For example:
+
+```
+LPUSH mylist someelement
+LTRIM mylist 0 99
+```
+
+This pair of commands will push a new element on the list, while making sure that the list will not grow larger than 100 elements. This is very useful when using Redis to store logs.
+
+#### Examples
+
+```
+redis> RPUSH mylist "one"
+(integer) 1
+redis> RPUSH mylist "two"
+(integer) 2
+redis> RPUSH mylist "three"
+(integer) 3
+redis> LTRIM mylist 1 -1
+"OK"
+redis> LRANGE mylist 0 -1
+1) "two"
+2) "three"
+```
+
+
+
+## References:
+
+- [Commands | Redis](https://redis.io/commands/)
+
+
+
